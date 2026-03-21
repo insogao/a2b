@@ -16,7 +16,7 @@ describe("targets", () => {
     );
 
     expect(descriptor).toEqual({
-      targetId: "session-alpha-tab-381",
+      targetId: "tab-381",
       tabId: 381,
       title: "Gmail",
       origin: "https://mail.google.com",
@@ -27,7 +27,7 @@ describe("targets", () => {
   it("formats a copyable target descriptor for AI tools", () => {
     const text = formatTargetDescriptor(
       {
-        targetId: "session-alpha-tab-381",
+        targetId: "tab-381",
         tabId: 381,
         title: "Gmail",
         origin: "https://mail.google.com",
@@ -37,7 +37,7 @@ describe("targets", () => {
     );
 
     expect(text).toContain("Bridge: ws://127.0.0.1:46321/ws");
-    expect(text).toContain("Target: session-alpha-tab-381");
+    expect(text).toContain("Target: tab-381");
     expect(text).toContain("Origin: https://mail.google.com");
     expect(text).toContain("Title: Gmail");
   });

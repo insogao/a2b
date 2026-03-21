@@ -74,7 +74,7 @@ describe("bridgeClient", () => {
     expect(message).toEqual({
       type: "target.register",
       payload: {
-        targetId: "session-alpha-tab-12",
+        targetId: "tab-12",
         tabId: 12,
         title: "Google",
         origin: "https://www.google.com",

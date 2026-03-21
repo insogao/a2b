@@ -11,7 +11,7 @@ const connectedState: PopupState = {
   recordingActive: false,
   recordingCount: 3,
   target: {
-    targetId: "session-alpha-tab-381",
+    targetId: "tab-381",
     tabId: 381,
     title: "Gmail",
     origin: "https://mail.google.com",
@@ -25,7 +25,7 @@ describe("App", () => {
 
     expect(screen.getByText("Connected")).toBeDefined();
     expect(screen.getByText("Gmail")).toBeDefined();
-    expect(screen.getByText("session-alpha-tab-381")).toBeDefined();
+    expect(screen.getByText("tab-381")).toBeDefined();
     expect(screen.getByText("https://mail.google.com")).toBeDefined();
     expect(screen.getByText("Ready · 3")).toBeDefined();
     expect(screen.getByText("SID=abc123; HSID=def456")).toBeDefined();
@@ -68,7 +68,7 @@ describe("App", () => {
       )
     );
     expect(onCopy).toHaveBeenCalledWith(
-      expect.stringContaining("Recording: bridge://recording/session-alpha-tab-381")
+      expect.stringContaining("Recording: bridge://recording/tab-381")
     );
   });
 

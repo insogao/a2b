@@ -1,3 +1,4 @@
+import { choosePopupTarget } from "./activeTarget";
 import { BridgeClient } from "./bridgeClient";
 import {
   filterCookiesForUrl,
@@ -22,7 +23,12 @@ const runtimeState: ExtensionRuntimeState = {
   settings: createDefaultBridgeSettings(),
   bridgeStatus: "disconnected",
   targets: new Map(),
-  recordings: new RecordingStore()
+  lastTargetTabId: null,
+  recordings: new RecordingStore(),
+  diagnostics: {
+    contentEventsSeen: 0,
+    lastEvent: null
+  }
 };
 
 const bridgeClient = new BridgeClient({
@@ -79,6 +85,10 @@ chrome.tabs.onRemoved.addListener((tabId) => {
     return;
   }
   runtimeState.targets.delete(tabId);
+  if (runtimeState.lastTargetTabId === tabId) {
+    runtimeState.lastTargetTabId =
+      runtimeState.targets.values().next().value?.tabId ?? null;
+  }
   if (bridgeClient.status === "connected") {
     bridgeClient.send({
       type: "target.unregister",
@@ -169,9 +179,69 @@ async function handleRuntimeMessage(
     if (!target) {
       return { ok: false };
     }
+    runtimeState.diagnostics.contentEventsSeen += 1;
+    runtimeState.diagnostics.lastEvent = message.payload as RecordingEntry;
     runtimeState.recordings.add(target.targetId, message.payload as RecordingEntry);
     await persistRecordingStore();
     return { ok: true };
+  }
+
+  if (
+    typeof message === "object" &&
+    message !== null &&
+    "type" in message &&
+    message.type === "e2e.listTargets"
+  ) {
+    return Array.from(runtimeState.targets.values());
+  }
+
+  if (
+    typeof message === "object" &&
+    message !== null &&
+    "type" in message &&
+    message.type === "e2e.recording.start"
+  ) {
+    const targetId = "targetId" in message && typeof message.targetId === "string"
+      ? message.targetId
+      : null;
+    if (!targetId) {
+      return { ok: false };
+    }
+    runtimeState.recordings.start(targetId);
+    await persistRecordingStore();
+    return { ok: true, targetId };
+  }
+
+  if (
+    typeof message === "object" &&
+    message !== null &&
+    "type" in message &&
+    message.type === "e2e.recording.get"
+  ) {
+    const targetId = "targetId" in message && typeof message.targetId === "string"
+      ? message.targetId
+      : null;
+    if (!targetId) {
+      return { ok: false };
+    }
+    return {
+      ok: true,
+      active: runtimeState.recordings.isActive(targetId),
+      entries: runtimeState.recordings.get(targetId)
+    };
+  }
+
+  if (
+    typeof message === "object" &&
+    message !== null &&
+    "type" in message &&
+    message.type === "e2e.debugState"
+  ) {
+    return {
+      targets: Array.from(runtimeState.targets.values()),
+      recordingSnapshot: runtimeState.recordings.snapshot(),
+      diagnostics: runtimeState.diagnostics
+    };
   }
 
   return { ok: false };
@@ -334,6 +404,7 @@ async function registerTab(tab: chrome.tabs.Tab) {
 
   const descriptor = createTargetDescriptor(tab, runtimeState.settings.sessionId);
   runtimeState.targets.set(tab.id, descriptor);
+  runtimeState.lastTargetTabId = tab.id;
   if (bridgeClient.status === "connected") {
     bridgeClient.send({
       type: "target.register",
@@ -352,10 +423,19 @@ async function ensureBridgeConnection() {
 
 async function getActiveTarget() {
   const activeTab = await getActiveTab();
-  if (!activeTab?.id) {
-    return null;
+  const activeTarget = activeTab?.id
+    ? runtimeState.targets.get(activeTab.id) ?? (await registerTab(activeTab))
+    : null;
+
+  if (activeTarget) {
+    return activeTarget;
   }
-  return runtimeState.targets.get(activeTab.id) ?? registerTab(activeTab);
+
+  return choosePopupTarget({
+    activeTabId: activeTab?.id ?? null,
+    lastTargetTabId: runtimeState.lastTargetTabId,
+    targets: runtimeState.targets
+  });
 }
 
 async function getActiveTab() {

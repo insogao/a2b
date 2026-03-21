@@ -10,7 +10,7 @@ type MinimalTab = Pick<chrome.tabs.Tab, "id" | "title" | "url">;
 
 export function createTargetDescriptor(
   tab: MinimalTab,
-  sessionId: string
+  _sessionId: string
 ): BridgeTargetDescriptor {
   if (!tab.id) {
     throw new Error("Cannot create a target descriptor without a tab id");
@@ -22,7 +22,7 @@ export function createTargetDescriptor(
   const parsedUrl = new URL(tab.url);
 
   return {
-    targetId: `${sessionId}-tab-${tab.id}`,
+    targetId: `tab-${tab.id}`,
     tabId: tab.id,
     title: tab.title ?? parsedUrl.hostname,
     origin: parsedUrl.origin,
