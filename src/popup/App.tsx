@@ -49,12 +49,21 @@ export function App({
       <style>
         {`
           @keyframes bridge-recording-breathe {
-            0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.36); }
-            70% { box-shadow: 0 0 0 6px rgba(239, 68, 68, 0); }
+            0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.48); transform: scale(1); }
+            50% { box-shadow: 0 0 0 8px rgba(239, 68, 68, 0.12); transform: scale(1.04); }
+            70% { box-shadow: 0 0 0 12px rgba(239, 68, 68, 0); transform: scale(1.02); }
             100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+          }
+          @keyframes bridge-recording-capsule-glow {
+            0% { box-shadow: 0 6px 18px rgba(220, 38, 38, 0.18), 0 0 0 0 rgba(248, 113, 113, 0.22); }
+            50% { box-shadow: 0 10px 24px rgba(220, 38, 38, 0.28), 0 0 0 6px rgba(248, 113, 113, 0.12); }
+            100% { box-shadow: 0 6px 18px rgba(220, 38, 38, 0.18), 0 0 0 0 rgba(248, 113, 113, 0); }
           }
           .bridge-recording-dot {
             animation: bridge-recording-breathe 2s infinite;
+          }
+          .bridge-recording-capsule {
+            animation: bridge-recording-capsule-glow 2s infinite;
           }
         `}
       </style>
@@ -96,22 +105,28 @@ export function App({
           onClick={state.target ? onToggleRecording : undefined}
           disabled={!state.target}
           aria-label={recordingLabel}
+          className={isRecording ? "bridge-recording-capsule" : undefined}
           style={{
             display: "flex",
             alignItems: "center",
             gap: 8,
-            padding: "7px 12px",
+            padding: "8px 13px",
             borderRadius: 999,
-            border: `1px solid ${isRecording ? "#FCA5A5" : "#E5E7EB"}`,
-            backgroundColor: isRecording ? "#FEF2F2" : "#FFFFFF",
-            color: isRecording ? "#DC2626" : "#374151",
+            border: `1px solid ${isRecording ? "#F87171" : "#E5E7EB"}`,
+            background: isRecording
+              ? "linear-gradient(180deg, #FFF1F2 0%, #FFE4E6 100%)"
+              : "#FFFFFF",
+            color: isRecording ? "#B91C1C" : "#374151",
             fontSize: 12,
             fontWeight: 600,
             cursor: state.target ? "pointer" : "default",
-            boxShadow: "0 1px 2px rgba(0,0,0,0.05)",
+            boxShadow: isRecording
+              ? "0 8px 20px rgba(220, 38, 38, 0.18)"
+              : "0 1px 2px rgba(0,0,0,0.05)",
             transition: "all 0.2s ease",
             minWidth: 112,
-            justifyContent: "flex-start"
+            justifyContent: "flex-start",
+            transform: isRecording ? "translateY(-1px)" : "none"
           }}
         >
           <span
@@ -121,7 +136,8 @@ export function App({
               height: 8,
               borderRadius: "50%",
               backgroundColor: isRecording ? "#EF4444" : "#10B981",
-              flexShrink: 0
+              flexShrink: 0,
+              boxShadow: isRecording ? "0 0 10px rgba(239, 68, 68, 0.8)" : "none"
             }}
           />
           <div
