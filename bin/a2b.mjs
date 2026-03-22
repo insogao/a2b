@@ -1,6 +1,13 @@
 #!/usr/bin/env node
 
 import fs from "node:fs/promises";
+import {
+  listMarketCategories,
+  listMarketEntries,
+  searchMarketEntries,
+  showMarketEntry,
+  updateMarketCache
+} from "./lib/a2b-market.mjs";
 import { createRelayServer } from "./lib/a2b-relay-server.mjs";
 import { requestJson } from "./lib/a2b-http-client.mjs";
 import { formatHelp } from "./lib/a2b-help.mjs";
@@ -82,6 +89,50 @@ try {
       flags.json
     );
     await new Promise(() => {});
+  }
+
+  if (command === "market") {
+    const subcommand = rest[0];
+    const subarg = rest[1];
+
+    if (subcommand === "update") {
+      print(await updateMarketCache(), flags.json);
+      process.exit(0);
+    }
+
+    if (subcommand === "categories") {
+      const result = await listMarketCategories();
+      print(flags.json ? { categories: result } : result, flags.json);
+      process.exit(0);
+    }
+
+    if (subcommand === "list") {
+      if (!subarg) {
+        throw new Error("market list requires a category");
+      }
+      const result = await listMarketEntries(undefined, subarg);
+      print(flags.json ? { entries: result } : result, flags.json);
+      process.exit(0);
+    }
+
+    if (subcommand === "show") {
+      if (!subarg) {
+        throw new Error("market show requires an entry");
+      }
+      print(await showMarketEntry(undefined, subarg), flags.json);
+      process.exit(0);
+    }
+
+    if (subcommand === "search") {
+      if (!subarg) {
+        throw new Error("market search requires a keyword");
+      }
+      const result = await searchMarketEntries(undefined, subarg);
+      print(flags.json ? { entries: result } : result, flags.json);
+      process.exit(0);
+    }
+
+    throw new Error("market requires one of: update, categories, list, show, search");
   }
 
   if (command === "status") {

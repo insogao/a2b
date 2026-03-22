@@ -5,6 +5,11 @@ Usage:
   a2b -h
   a2b serve [--port <port>] [--token <token>]
   a2b status [--port <port>] [--token <token>] [--json]
+  a2b market update [--json]
+  a2b market categories [--json]
+  a2b market list <category> [--json]
+  a2b market show <entry> [--json]
+  a2b market search <keyword> [--json]
   a2b tabs [--port <port>] [--token <token>] [--json]
   a2b new [url] [--port <port>] [--token <token>] [--json]
   a2b select <target> [--port <port>] [--token <token>] [--json]

@@ -40,6 +40,12 @@ Optional flags:
 node ./testbench/run-kimi-batch.mjs --manifest ./testbench/tasks/default.json --concurrency 2
 ```
 
+Market-specific exploration manifest:
+
+```bash
+node ./testbench/run-kimi-batch.mjs --manifest ./testbench/tasks/market-exploration.json --concurrency 2
+```
+
 The runner feeds each agent a prompt that starts with a simulated `Copy For AI` bootstrap, then appends the specific test task. That keeps batch tests closer to the real user handoff path.
 
 Before launching any Kimi task, the runner now does a shared environment preflight:
@@ -50,6 +56,15 @@ Before launching any Kimi task, the runner now does a shared environment preflig
 - starts at most one shared relay when needed
 
 This keeps environment churn out of the logs, so remaining confusion is more likely to come from A2B docs or command semantics.
+
+## Market Review Pattern
+
+For market work, use a two-pass flow:
+
+- worker task explores a category or entry and writes a report
+- reviewer task reads the worker log and report, then calls out unsupported claims and wording ambiguity
+
+This keeps the market focused on clear, low-ambiguity guidance rather than raw exploration notes.
 
 ## Reporting Rules
 

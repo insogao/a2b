@@ -44,6 +44,7 @@ AI-facing bridge docs live at:
 
 - [`docs/AI_BRIDGE_PROTOCOL.md`](/Users/gaoshizai/work/plugin/docs/AI_BRIDGE_PROTOCOL.md)
 - GitHub bootstrap: [`.codex/INSTALL.md`](https://raw.githubusercontent.com/insogao/a2b/main/.codex/INSTALL.md)
+- Market guide: [`docs/AI_MARKET_GUIDE.md`](/Users/gaoshizai/work/plugin/docs/AI_MARKET_GUIDE.md)
 
 ## AI Bootstrap
 
@@ -89,6 +90,11 @@ node ./bin/a2b.mjs tabs
 node ./bin/a2b.mjs new https://gemini.google.com
 node ./bin/a2b.mjs select tab-3
 node ./bin/a2b.mjs goto tab-3 https://gemini.google.com
+node ./bin/a2b.mjs market update
+node ./bin/a2b.mjs market categories
+node ./bin/a2b.mjs market list search
+node ./bin/a2b.mjs market show search/baidu
+node ./bin/a2b.mjs market search yt-dlp
 node ./bin/a2b.mjs reload tab-3
 node ./bin/a2b.mjs cookies tab-3
 node ./bin/a2b.mjs log tab-3
@@ -101,6 +107,20 @@ node ./bin/a2b.mjs screenshot tab-3 --path ./page.png
 ```
 
 When installed as a package, the executable name is `a2b`.
+
+## Market
+
+The A2B market is a GitHub-backed index of site notes, external tool references, and future community-contributed skills.
+
+- Source repo: [a2b-market](https://github.com/insogao/a2b-market)
+- Local update: `node ./bin/a2b.mjs market update`
+- Browse with:
+  - `node ./bin/a2b.mjs market categories`
+  - `node ./bin/a2b.mjs market list <category>`
+  - `node ./bin/a2b.mjs market show <entry>`
+  - `node ./bin/a2b.mjs market search <keyword>`
+
+The first version is read-only and link-first. It helps AI discover how to use specific sites or external tools, but it does not replace the core A2B operator flow.
 
 ## Default Local Bridge
 

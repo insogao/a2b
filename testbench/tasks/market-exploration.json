@@ -1,0 +1,15 @@
+{
+  "sharedInstructions": "Use the market CLI first. Record unclear taxonomy, missing metadata, weak entry wording, and any place where the guide would confuse a low-capability AI.",
+  "tasks": [
+    {
+      "name": "Search Category Review",
+      "slug": "market-search-review",
+      "prompt": "Use `a2b market update`, then inspect the `search` category through the market CLI. Evaluate whether the category structure and entry summaries are clear enough for a low-capability AI. Write a report that names any ambiguous wording and suggests one concrete improvement."
+    },
+    {
+      "name": "External Tool Entry Review",
+      "slug": "market-external-tool-review",
+      "prompt": "Use the market CLI to inspect the `multimedia/yt-dlp` entry. Evaluate whether the entry clearly explains that it is an external tool reference rather than an A2B built-in capability. Write a report with any confusion points and one suggested wording fix."
+    }
+  ]
+}
