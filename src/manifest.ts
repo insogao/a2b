@@ -6,7 +6,15 @@ const manifest: ManifestV3Export = {
   version: "0.1.0",
   description:
     "Connect AI tools to the current logged-in Chrome tab with target metadata, cookies, and logs.",
-  permissions: ["storage", "tabs", "cookies", "debugger", "activeTab", "alarms"],
+  permissions: [
+    "storage",
+    "tabs",
+    "cookies",
+    "debugger",
+    "activeTab",
+    "alarms",
+    "scripting"
+  ],
   host_permissions: ["http://127.0.0.1/*", "http://*/*", "https://*/*"],
   background: {
     service_worker: "src/background/index.ts",
@@ -16,6 +24,12 @@ const manifest: ManifestV3Export = {
     default_title: "Current Browser Bridge",
     default_popup: "src/popup/index.html"
   },
+  web_accessible_resources: [
+    {
+      resources: ["ai-guide.html"],
+      matches: ["http://*/*", "https://*/*"]
+    }
+  ],
   content_scripts: [
     {
       matches: ["http://*/*", "https://*/*"],

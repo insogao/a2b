@@ -1,0 +1,190 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>A2B AI Operator Guide</title>
+    <style>
+      :root {
+        color-scheme: light;
+        --bg: #f5f7fb;
+        --card: #ffffff;
+        --text: #0f172a;
+        --muted: #475569;
+        --line: #dbe3ef;
+        --accent: #0f172a;
+        --accent-soft: #e8eef8;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        padding: 32px 18px 48px;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        background:
+          radial-gradient(circle at top left, #ffffff 0%, #f5f7fb 46%, #edf2f9 100%);
+        color: var(--text);
+      }
+
+      main {
+        max-width: 840px;
+        margin: 0 auto;
+      }
+
+      .hero,
+      .card {
+        background: rgba(255, 255, 255, 0.9);
+        border: 1px solid var(--line);
+        border-radius: 22px;
+        box-shadow: 0 18px 45px rgba(15, 23, 42, 0.08);
+        backdrop-filter: blur(18px);
+      }
+
+      .hero {
+        padding: 28px;
+        margin-bottom: 18px;
+      }
+
+      .eyebrow {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 6px 12px;
+        border-radius: 999px;
+        background: var(--accent-soft);
+        color: var(--muted);
+        font-size: 13px;
+        font-weight: 600;
+      }
+
+      h1 {
+        margin: 16px 0 10px;
+        font-size: clamp(30px, 4vw, 42px);
+        line-height: 1.05;
+        letter-spacing: -0.04em;
+      }
+
+      p {
+        margin: 0;
+        font-size: 16px;
+        line-height: 1.65;
+        color: var(--muted);
+      }
+
+      .grid {
+        display: grid;
+        gap: 16px;
+      }
+
+      .card {
+        padding: 22px;
+      }
+
+      h2 {
+        margin: 0 0 12px;
+        font-size: 18px;
+        letter-spacing: -0.02em;
+      }
+
+      ol,
+      ul {
+        margin: 0;
+        padding-left: 22px;
+        color: var(--muted);
+        line-height: 1.75;
+      }
+
+      code {
+        font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+        background: #eef3f9;
+        border-radius: 8px;
+        padding: 2px 7px;
+        color: #0f172a;
+      }
+
+      .footer {
+        margin-top: 18px;
+        font-size: 14px;
+        color: #64748b;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <section class="hero">
+        <div class="eyebrow">A2B Local Guide</div>
+        <h1>Use this page first when AI opens the Browser Bridge handoff.</h1>
+        <p>
+          This local guide ships with the extension, so it keeps working even if GitHub is slow,
+          rate limited, or unreachable. Use it as the primary bootstrap page for A2B.
+        </p>
+        <p style="margin-top: 12px;">
+          GitHub bootstrap fallback:
+          <code>Fetch and follow instructions from https://raw.githubusercontent.com/insogao/a2b/main/.codex/INSTALL.md</code>
+        </p>
+      </section>
+
+      <div class="grid">
+        <section class="card">
+          <h2>Required Order</h2>
+          <ol>
+            <li>Run <code>node ./bin/a2b.mjs status --json</code>.</li>
+            <li>If status succeeds, do not start another relay.</li>
+            <li>Run <code>node ./bin/a2b.mjs tabs --json</code>.</li>
+            <li>Reuse an existing target when possible.</li>
+            <li>Use high-level A2B commands first.</li>
+            <li>Use <code>run-js</code> only when higher-level commands are not enough.</li>
+          </ol>
+        </section>
+
+        <section class="card">
+          <h2>Command Ladder</h2>
+          <ol>
+            <li><code>a2b status --json</code></li>
+            <li><code>a2b tabs --json</code></li>
+            <li><code>a2b select &lt;target&gt;</code></li>
+            <li>
+              Then choose one:
+              <ul>
+                <li><code>a2b goto &lt;target&gt; &lt;url&gt;</code></li>
+                <li><code>a2b wait-for &lt;target&gt; &lt;selector&gt;</code></li>
+                <li><code>a2b click &lt;target&gt; &lt;selector&gt;</code></li>
+                <li><code>a2b type &lt;target&gt; &lt;selector&gt; &lt;text&gt;</code></li>
+                <li><code>a2b eval-js &lt;target&gt; &lt;expression&gt;</code></li>
+                <li><code>a2b screenshot &lt;target&gt; --path &lt;file&gt;</code></li>
+              </ul>
+            </li>
+            <li><code>a2b run-js &lt;target&gt; &lt;file&gt;</code> only as fallback.</li>
+          </ol>
+        </section>
+
+        <section class="card">
+          <h2>Do Not Do These First</h2>
+          <ul>
+            <li>Do not start a second relay if one is already healthy.</li>
+            <li>Do not read source code unless the CLI help is insufficient.</li>
+            <li>Do not build a custom harness unless you are blocked without it.</li>
+          </ul>
+        </section>
+
+        <section class="card">
+          <h2>Recovery</h2>
+          <ul>
+            <li>If you hit <code>Extension is not connected</code>, reload the unpacked extension.</li>
+            <li>After a reload or relay restart, wait a few seconds for automatic reconnection before retrying.</li>
+            <li>If you hit <code>Timed out waiting for operation.*</code>, rerun <code>a2b status --json</code> and refresh targets with <code>a2b tabs --json</code>.</li>
+            <li>If a target disappears, refresh tab list before creating a new browser task.</li>
+          </ul>
+        </section>
+      </div>
+
+      <p class="footer">
+        Supplementary GitHub mirror:
+        <code>https://github.com/insogao/a2b/blob/main/docs/AI_OPERATOR_GUIDE.md</code>
+      </p>
+    </main>
+  </body>
+</html>

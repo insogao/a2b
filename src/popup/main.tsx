@@ -49,7 +49,7 @@ function PopupRoot() {
   useEffect(() => {
     const interval = window.setInterval(() => {
       void requestPopupState().then(setState);
-    }, state.recordingActive ? 800 : 2000);
+    }, state.browserAccessEnabled && state.recordingActive ? 800 : 2000);
 
     return () => {
       window.clearInterval(interval);
@@ -70,6 +70,14 @@ function PopupRoot() {
           void requestPopupState().then(setState);
         }
       );
+    },
+    onToggleBrowserAccess: () => {
+      const action = state.browserAccessEnabled
+        ? "popup.browserAccess.disable"
+        : "popup.browserAccess.enable";
+      void sendRuntimeMessage(action).then(() => {
+        void requestPopupState().then(setState);
+      });
     },
     onToggleRecording: () => {
       const action = state.recordingActive

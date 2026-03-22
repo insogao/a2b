@@ -5,7 +5,9 @@ import type { PopupState } from "./hooks";
 
 const connectedState: PopupState = {
   bridgeUrl: "ws://127.0.0.1:46321/ws",
+  guideUrl: "chrome-extension://abcdefghijklmnop/ai-guide.html",
   bridgeStatus: "connected",
+  browserAccessEnabled: true,
   copied: false,
   cookieHeader: "SID=abc123; HSID=def456",
   recordingActive: false,
@@ -20,23 +22,30 @@ const connectedState: PopupState = {
 };
 
 describe("App", () => {
-  it("shows the current target descriptor and connection status", () => {
+  it("shows the current target descriptor and browser access state", () => {
     render(<App state={connectedState} onCopy={vi.fn()} />);
 
-    expect(screen.getByText("Connected")).toBeDefined();
+    expect(screen.getByText("On")).toBeDefined();
+    expect(
+      screen.getByRole("switch", { name: "Browser Access" }).getAttribute(
+        "aria-checked"
+      )
+    ).toBe("true");
     expect(screen.getByText("Gmail")).toBeDefined();
     expect(screen.getByText("tab-381")).toBeDefined();
     expect(screen.getByText("https://mail.google.com")).toBeDefined();
-    expect(screen.getByText("Ready · 3")).toBeDefined();
+    expect(screen.getByText("Debug Count · 3")).toBeDefined();
     expect(screen.getByText("SID=abc123; HSID=def456")).toBeDefined();
   });
 
-  it("renders a disconnected state when no bridge is active", () => {
+  it("renders a paused state when browser access is disabled", () => {
     render(
       <App
         state={{
           bridgeUrl: "ws://127.0.0.1:46321/ws",
+          guideUrl: "chrome-extension://abcdefghijklmnop/ai-guide.html",
           bridgeStatus: "disconnected",
+          browserAccessEnabled: false,
           copied: false,
           cookieHeader: null,
           recordingActive: false,
@@ -47,12 +56,17 @@ describe("App", () => {
       />
     );
 
-    expect(screen.getByText("Disconnected")).toBeDefined();
-    expect(screen.getByText("Waiting for target...")).toBeDefined();
+    expect(screen.getByText("Off")).toBeDefined();
     expect(
-      screen.getByText(
-        "Open a normal web page to register a target. Data snapshot will appear here."
+      screen.getByRole("switch", { name: "Browser Access" }).getAttribute(
+        "aria-checked"
       )
+    ).toBe("false");
+    expect(
+      screen.getByText("Browser access is turned off")
+    ).toBeDefined();
+    expect(
+      screen.getByText("Turn it back on to reconnect.")
     ).toBeDefined();
   });
 
@@ -64,7 +78,17 @@ describe("App", () => {
 
     expect(onCopy).toHaveBeenCalledWith(
       expect.stringContaining(
-        "Docs: https://github.com/insogao/a2b/blob/main/docs/AI_BRIDGE_PROTOCOL.md"
+        "First read in browser: chrome-extension://"
+      )
+    );
+    expect(onCopy).toHaveBeenCalledWith(
+      expect.stringContaining(
+        "If unavailable, fetch and follow instructions from https://raw.githubusercontent.com/insogao/a2b/main/.codex/INSTALL.md"
+      )
+    );
+    expect(onCopy).toHaveBeenCalledWith(
+      expect.stringContaining(
+        "Detailed guide: https://github.com/insogao/a2b/blob/main/docs/AI_OPERATOR_GUIDE.md"
       )
     );
     expect(onCopy).toHaveBeenCalledWith(
@@ -72,8 +96,8 @@ describe("App", () => {
     );
   });
 
-  it("uses the recording pill as the toggle control", () => {
-    const onToggleRecording = vi.fn();
+  it("uses the browser access switch as the primary control", () => {
+    const onToggleBrowserAccess = vi.fn();
     render(
       <App
         state={{
@@ -82,12 +106,12 @@ describe("App", () => {
           recordingCount: 12
         }}
         onCopy={vi.fn()}
-        onToggleRecording={onToggleRecording}
+        onToggleBrowserAccess={onToggleBrowserAccess}
       />
     );
 
-    fireEvent.click(screen.getByRole("button", { name: "Recording · 12" }));
+    fireEvent.click(screen.getByRole("switch", { name: "Browser Access" }));
 
-    expect(onToggleRecording).toHaveBeenCalledTimes(1);
+    expect(onToggleBrowserAccess).toHaveBeenCalledTimes(1);
   });
 });

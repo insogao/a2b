@@ -1,0 +1,58 @@
+{
+  "runId": "2026-03-21T16-13-19-554Z",
+  "manifestPath": "/Users/gaoshizai/work/plugin/testbench/tasks/chrome-real-world.json",
+  "tasks": [
+    {
+      "name": "Reuters 最新新闻与受益股票分析",
+      "slug": "reuters-stock-analysis",
+      "status": "passed",
+      "exitCode": 0,
+      "durationMs": 323646,
+      "reportPath": "/Users/gaoshizai/work/plugin/testbench/runs/2026-03-21T16-13-19-554Z/reuters-stock-analysis/report.md",
+      "notes": "# Reuters 最新新闻与受益股票分析报告",
+      "artifacts": [
+        "prompt.md",
+        "raw-output.txt",
+        "report.md"
+      ]
+    },
+    {
+      "name": "Google 美女图片下载",
+      "slug": "google-images-download",
+      "status": "passed",
+      "exitCode": 0,
+      "durationMs": 388505,
+      "reportPath": "/Users/gaoshizai/work/plugin/testbench/runs/2026-03-21T16-13-19-554Z/google-images-download/report.md",
+      "notes": "# A2B Google Images Download Task Report",
+      "artifacts": [
+        "extract_images.js",
+        "prompt.md",
+        "raw-output.txt",
+        "report.md",
+        "step1_google_imghp.png",
+        "step2_search_results.png"
+      ]
+    },
+    {
+      "name": "Gemini 提问并复制答案",
+      "slug": "gemini-answer-copy",
+      "status": "passed",
+      "exitCode": 0,
+      "durationMs": 388613,
+      "reportPath": "/Users/gaoshizai/work/plugin/testbench/runs/2026-03-21T16-13-19-554Z/gemini-answer-copy/report.md",
+      "notes": "# A2B Gemini Task Report",
+      "artifacts": [
+        "gemini-helper.js",
+        "prompt.md",
+        "raw-output.txt",
+        "report.md",
+        "screenshot1.png",
+        "screenshot2.png",
+        "screenshot3.png",
+        "screenshot4.png",
+        "screenshot5.png",
+        "screenshot6.png"
+      ]
+    }
+  ]
+}

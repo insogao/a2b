@@ -7,6 +7,7 @@ export type BridgeStatus = "disconnected" | "connecting" | "connected";
 export type BridgeSettings = {
   endpoint: string;
   sessionId: string;
+  browserAccessEnabled: boolean;
 };
 
 export type ExtensionRuntimeState = {
@@ -24,6 +25,7 @@ export type ExtensionRuntimeState = {
 export function createDefaultBridgeSettings(): BridgeSettings {
   return {
     endpoint: "127.0.0.1:46321",
-    sessionId: "session-local"
+    sessionId: "session-local",
+    browserAccessEnabled: true
   };
 }

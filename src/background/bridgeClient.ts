@@ -4,9 +4,15 @@ import { type BridgeStatus } from "./state";
 
 type SocketEventHandler = (event?: unknown) => void;
 
+export type BridgeHealth = {
+  reachable: boolean;
+  extensionConnected: boolean;
+};
+
 export type WebSocketLike = {
   addEventListener(type: string, handler: SocketEventHandler): void;
   send(payload: string): void;
+  close?: () => void;
 };
 
 type BridgeClientOptions = {
@@ -15,7 +21,8 @@ type BridgeClientOptions = {
   onStateChange?: (status: BridgeStatus) => void;
   onMessage?: (message: string) => void;
   onOpen?: () => void;
-  healthCheck?: (url: string) => Promise<boolean>;
+  healthCheck?: (url: string) => Promise<BridgeHealth | boolean>;
+  keepAliveMs?: number;
 };
 
 export class BridgeClient {
@@ -24,9 +31,11 @@ export class BridgeClient {
   readonly onStateChange?: (status: BridgeStatus) => void;
   readonly onMessage?: (message: string) => void;
   readonly onOpen?: () => void;
-  readonly healthCheck: (url: string) => Promise<boolean>;
+  readonly healthCheck: (url: string) => Promise<BridgeHealth | boolean>;
+  readonly keepAliveMs: number;
   status: BridgeStatus = "disconnected";
   socket: WebSocketLike | null = null;
+  keepAliveTimer: ReturnType<typeof setInterval> | null = null;
 
   constructor(options: BridgeClientOptions) {
     this.endpoint = normalizeBridgeEndpoint(options.endpoint);
@@ -36,16 +45,32 @@ export class BridgeClient {
     this.onMessage = options.onMessage;
     this.onOpen = options.onOpen;
     this.healthCheck = options.healthCheck ?? probeBridgeHealth;
+    this.keepAliveMs = options.keepAliveMs ?? 20_000;
   }
 
   async start() {
-    const healthy = await this.healthCheck(this.endpoint);
-    if (!healthy) {
+    const health = normalizeBridgeHealth(await this.healthCheck(this.endpoint));
+    if (!health.reachable) {
       this.setStatus("disconnected");
       return false;
     }
     this.connect();
     return true;
+  }
+
+  async refreshStatus() {
+    const health = normalizeBridgeHealth(await this.healthCheck(this.endpoint));
+
+    if (!health.reachable) {
+      this.disconnect();
+      return health;
+    }
+
+    if (this.status === "connected" && !health.extensionConnected) {
+      this.disconnect();
+    }
+
+    return health;
   }
 
   connect() {
@@ -56,13 +81,16 @@ export class BridgeClient {
     this.socket = this.socketFactory(this.endpoint);
     this.socket.addEventListener("open", () => {
       this.setStatus("connected");
+      this.startKeepAlive();
       this.onOpen?.();
     });
     this.socket.addEventListener("close", () => {
+      this.stopKeepAlive();
       this.socket = null;
       this.setStatus("disconnected");
     });
     this.socket.addEventListener("error", () => {
+      this.stopKeepAlive();
       this.socket = null;
       this.setStatus("disconnected");
     });
@@ -87,6 +115,30 @@ export class BridgeClient {
     this.socket.send(JSON.stringify(message));
   }
 
+  disconnect() {
+    this.stopKeepAlive();
+    this.socket?.close?.();
+    this.socket = null;
+    this.setStatus("disconnected");
+  }
+
+  private startKeepAlive() {
+    this.stopKeepAlive();
+    this.keepAliveTimer = setInterval(() => {
+      if (!this.socket || this.status !== "connected") {
+        return;
+      }
+      this.socket.send(JSON.stringify({ type: "ping", payload: {} }));
+    }, this.keepAliveMs);
+  }
+
+  private stopKeepAlive() {
+    if (this.keepAliveTimer) {
+      clearInterval(this.keepAliveTimer);
+      this.keepAliveTimer = null;
+    }
+  }
+
   private setStatus(status: BridgeStatus) {
     this.status = status;
     this.onStateChange?.(status);
@@ -107,7 +159,7 @@ export function buildTargetRegistration(
   };
 }
 
-export async function probeBridgeHealth(wsUrl: string): Promise<boolean> {
+export async function probeBridgeHealth(wsUrl: string): Promise<BridgeHealth> {
   const url = new URL(wsUrl);
   url.protocol = url.protocol === "wss:" ? "https:" : "http:";
   url.pathname = "/healthz";
@@ -117,8 +169,36 @@ export async function probeBridgeHealth(wsUrl: string): Promise<boolean> {
       method: "GET",
       cache: "no-store"
     });
-    return response.ok;
+    if (!response.ok) {
+      return {
+        reachable: false,
+        extensionConnected: false
+      };
+    }
+
+    const payload = (await response.json()) as {
+      extensionConnected?: unknown;
+    };
+
+    return {
+      reachable: true,
+      extensionConnected: payload.extensionConnected === true
+    };
   } catch {
-    return false;
+    return {
+      reachable: false,
+      extensionConnected: false
+    };
   }
+}
+
+function normalizeBridgeHealth(health: BridgeHealth | boolean): BridgeHealth {
+  if (typeof health === "boolean") {
+    return {
+      reachable: health,
+      extensionConnected: false
+    };
+  }
+
+  return health;
 }

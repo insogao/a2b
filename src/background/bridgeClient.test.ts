@@ -10,6 +10,7 @@ type EventHandler = () => void;
 class FakeSocket {
   handlers: Record<string, EventHandler[]> = {};
   sent: string[] = [];
+  closed = false;
 
   addEventListener(type: string, handler: EventHandler) {
     this.handlers[type] ??= [];
@@ -18,6 +19,10 @@ class FakeSocket {
 
   send(payload: string) {
     this.sent.push(payload);
+  }
+
+  close() {
+    this.closed = true;
   }
 
   emit(type: string) {
@@ -110,5 +115,61 @@ describe("bridgeClient", () => {
 
     expect(socketFactory).toHaveBeenCalledWith("ws://127.0.0.1:46321/ws");
     expect(client.status).toBe("connecting");
+  });
+
+  it("disconnects an existing websocket when requested", () => {
+    const socket = new FakeSocket();
+    const client = new BridgeClient({
+      endpoint: "127.0.0.1:46321",
+      socketFactory: () => socket
+    });
+
+    client.connect();
+    client.disconnect();
+
+    expect(socket.closed).toBe(true);
+    expect(client.status).toBe("disconnected");
+  });
+
+  it("sends websocket keepalive pings while connected", async () => {
+    vi.useFakeTimers();
+    const socket = new FakeSocket();
+    const client = new BridgeClient({
+      endpoint: "127.0.0.1:46321",
+      socketFactory: () => socket,
+      healthCheck: vi.fn().mockResolvedValue(true)
+    });
+
+    await client.start();
+    socket.emit("open");
+
+    await vi.advanceTimersByTimeAsync(20_000);
+
+    expect(socket.sent).toContain(JSON.stringify({ type: "ping", payload: {} }));
+
+    client.disconnect();
+    vi.useRealTimers();
+  });
+
+  it("drops a stale connected state when relay health no longer sees the extension", async () => {
+    const socket = new FakeSocket();
+    const client = new BridgeClient({
+      endpoint: "127.0.0.1:46321",
+      socketFactory: () => socket,
+      healthCheck: vi
+        .fn()
+        .mockResolvedValueOnce({ reachable: true, extensionConnected: false })
+        .mockResolvedValueOnce({ reachable: true, extensionConnected: false })
+    });
+
+    client.connect();
+    socket.emit("open");
+
+    expect(client.status).toBe("connected");
+
+    await client.refreshStatus();
+
+    expect(socket.closed).toBe(true);
+    expect(client.status).toBe("disconnected");
   });
 });

@@ -1,0 +1,20 @@
+{
+  "sharedInstructions": "Use the simulated Copy For AI bootstrap first. Record every disconnect, timeout, stale target, retry, workaround, or ambiguity truthfully. If the browser task succeeds, still record any odd behavior. Prefer A2B high-level commands first, then eval-js, then run-js only if necessary.",
+  "tasks": [
+    {
+      "name": "Google 美女图片下载",
+      "slug": "google-images-download",
+      "prompt": "Use A2B to open Google image search for 美女图片, identify several image results, and download at least 3 image files into the task directory. Use the browser to find the images. In the report, include the exact saved filenames and whether the flow was smooth."
+    },
+    {
+      "name": "Gemini 提问并复制答案",
+      "slug": "gemini-answer-copy",
+      "prompt": "Use the existing Google Gemini tab if available. Ask Gemini a concise question in Chinese about today's most important AI product trends, wait for the answer to finish, then copy the final answer text into the report. Record the exact commands that mattered and whether any waiting or retries were needed."
+    },
+    {
+      "name": "Reuters 最新新闻与受益股票分析",
+      "slug": "reuters-stock-analysis",
+      "prompt": "Use A2B to visit Reuters, find the 3 most recent news items on the page, extract their titles and links, then analyze which public stocks could benefit from each item and why. Put the 3 news items plus the stock-benefit analysis into the report."
+    }
+  ]
+}

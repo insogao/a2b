@@ -9,352 +9,183 @@ type AppProps = {
   state: PopupState;
   onCopy: (value: string) => void;
   onCopyCookies?: () => void;
+  onToggleBrowserAccess?: () => void;
   onToggleRecording?: () => void;
 };
-
-function formatStatus(status: PopupState["bridgeStatus"]): string {
-  return status.charAt(0).toUpperCase() + status.slice(1);
-}
 
 export function App({
   state,
   onCopy,
   onCopyCookies,
+  onToggleBrowserAccess,
   onToggleRecording
 }: AppProps) {
   const copyText = buildAiBundleText(state);
-  const isRecording = state.recordingActive;
-  const statusLabel = isRecording ? "Recording" : formatStatus(state.bridgeStatus);
-  const recordingLabel = isRecording
-    ? `Recording · ${state.recordingCount}`
-    : `Ready · ${state.recordingCount}`;
+  const browserAccessLabel = state.browserAccessEnabled ? "On" : "Off";
+  const bridgeHint = state.browserAccessEnabled
+    ? state.bridgeStatus === "connected"
+      ? "AI bridge connected"
+      : "Waiting for local AI bridge"
+    : "Browser access is paused";
   const cookiePreview = previewCookieHeader(state.cookieHeader);
+  const canUseBridge = state.browserAccessEnabled && Boolean(state.target);
+  const debugLabel = `Debug Count · ${state.recordingCount}`;
 
   return (
-    <main
-      style={{
-        width: 360,
-        padding: 16,
-        fontFamily:
-          '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif',
-        color: "#111827",
-        backgroundColor: "#F3F4F6",
-        margin: 0,
-        boxSizing: "border-box",
-        display: "flex",
-        flexDirection: "column",
-        gap: 16
-      }}
-    >
+    <main style={mainStyle}>
       <style>
         {`
-          @keyframes bridge-recording-breathe {
-            0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.48); transform: scale(1); }
-            50% { box-shadow: 0 0 0 8px rgba(239, 68, 68, 0.12); transform: scale(1.04); }
-            70% { box-shadow: 0 0 0 12px rgba(239, 68, 68, 0); transform: scale(1.02); }
+          @keyframes bridge-debug-breathe {
+            0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.44); }
+            65% { box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); }
             100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
           }
-          @keyframes bridge-recording-capsule-glow {
-            0% { box-shadow: 0 6px 18px rgba(220, 38, 38, 0.18), 0 0 0 0 rgba(248, 113, 113, 0.22); }
-            50% { box-shadow: 0 10px 24px rgba(220, 38, 38, 0.28), 0 0 0 6px rgba(248, 113, 113, 0.12); }
-            100% { box-shadow: 0 6px 18px rgba(220, 38, 38, 0.18), 0 0 0 0 rgba(248, 113, 113, 0); }
-          }
-          .bridge-recording-dot {
-            animation: bridge-recording-breathe 2s infinite;
-          }
-          .bridge-recording-capsule {
-            animation: bridge-recording-capsule-glow 2s infinite;
+
+          .bridge-debug-dot {
+            animation: bridge-debug-breathe 1.8s infinite;
           }
         `}
       </style>
 
-      <header
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "flex-start",
-          gap: 12
-        }}
-      >
+      <header style={headerStyle}>
         <div>
-          <h1
-            style={{
-              margin: 0,
-              fontSize: 20,
-              fontWeight: 700,
-              letterSpacing: "-0.45px",
-              color: "#111827",
-              lineHeight: 1.2
-            }}
-          >
-            Browser Bridge
-          </h1>
-          <div
-            style={{
-              fontSize: 12,
-              color: "#6B7280",
-              marginTop: 4
-            }}
-          >
-            {state.bridgeUrl}
-          </div>
+          <h1 style={titleStyle}>Browser Bridge</h1>
+          <div style={bridgeUrlStyle}>{state.bridgeUrl}</div>
         </div>
 
-        <button
-          type="button"
-          onClick={state.target ? onToggleRecording : undefined}
-          disabled={!state.target}
-          aria-label={recordingLabel}
-          className={isRecording ? "bridge-recording-capsule" : undefined}
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: 8,
-            padding: "8px 13px",
-            borderRadius: 999,
-            border: `1px solid ${isRecording ? "#F87171" : "#E5E7EB"}`,
-            background: isRecording
-              ? "linear-gradient(180deg, #FFF1F2 0%, #FFE4E6 100%)"
-              : "#FFFFFF",
-            color: isRecording ? "#B91C1C" : "#374151",
-            fontSize: 12,
-            fontWeight: 600,
-            cursor: state.target ? "pointer" : "default",
-            boxShadow: isRecording
-              ? "0 8px 20px rgba(220, 38, 38, 0.18)"
-              : "0 1px 2px rgba(0,0,0,0.05)",
-            transition: "all 0.2s ease",
-            minWidth: 112,
-            justifyContent: "flex-start",
-            transform: isRecording ? "translateY(-1px)" : "none"
-          }}
-        >
-          <span
-            className={isRecording ? "bridge-recording-dot" : undefined}
-            style={{
-              width: 8,
-              height: 8,
-              borderRadius: "50%",
-              backgroundColor: isRecording ? "#EF4444" : "#10B981",
-              flexShrink: 0,
-              boxShadow: isRecording ? "0 0 10px rgba(239, 68, 68, 0.8)" : "none"
-            }}
-          />
-          <div
-            style={{
-              display: "flex",
-              flexDirection: "column",
-              alignItems: "flex-start",
-              lineHeight: 1.15
-            }}
-          >
-            <span>{statusLabel}</span>
-            <span
-              style={{
-                fontSize: 10,
-                fontWeight: 500,
-                opacity: 0.82
-              }}
-            >
-              {recordingLabel}
-            </span>
-          </div>
-        </button>
+        <div style={statusBadgeStyle(state.browserAccessEnabled)}>
+          {browserAccessLabel}
+        </div>
       </header>
 
-      {state.target ? (
-        <>
-          <section style={cardStyle}>
-            <div style={eyebrowStyle}>Active Target</div>
-            <div
-              style={{
-                fontSize: 22,
-                fontWeight: 700,
-                color: "#111827",
-                lineHeight: 1.2,
-                letterSpacing: "-0.5px",
-                marginBottom: 4,
-                wordBreak: "break-word"
-              }}
-            >
-              {state.target.title}
-            </div>
-            <div
-              style={{
-                fontSize: 13,
-                color: "#4B5563",
-                marginBottom: 16
-              }}
-            >
-              {state.target.origin}
-            </div>
-            <div
-              style={{
-                fontSize: 12,
-                fontFamily:
-                  'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace',
-                color: "#6B7280",
-                backgroundColor: "#F9FAFB",
-                padding: "8px 10px",
-                borderRadius: 6,
-                border: "1px solid #E5E7EB",
-                wordBreak: "break-all"
-              }}
-            >
-              {state.target.targetId}
-            </div>
-          </section>
-
-          <section
-            style={{
-              display: "flex",
-              flexDirection: "column",
-              gap: 12
-            }}
-          >
-            <section style={{ ...cardStyle, padding: "14px 16px" }}>
-              <div
-                style={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  alignItems: "center",
-                  gap: 12,
-                  marginBottom: 8
-                }}
-              >
-                <span
-                  style={{
-                    fontSize: 13,
-                    fontWeight: 600,
-                    color: "#374151"
-                  }}
-                >
-                  Cookie Snapshot
-                </span>
-                <button
-                  type="button"
-                  onClick={onCopyCookies}
-                  style={secondaryButtonStyle}
-                >
-                  Copy Cookie
-                </button>
-              </div>
-              <div
-                style={{
-                  fontSize: 13,
-                  color: "#6B7280",
-                  fontFamily:
-                    'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace',
-                  whiteSpace: "nowrap",
-                  overflow: "hidden",
-                  textOverflow: "ellipsis",
-                  backgroundColor: "#F9FAFB",
-                  padding: "6px 8px",
-                  borderRadius: 4,
-                  border: "1px solid #E5E7EB"
-                }}
-              >
-                {cookiePreview || "No cookies available"}
-              </div>
-            </section>
-
-            <section style={{ ...cardStyle, padding: "14px 16px" }}>
-              <div
-                style={{
-                  fontSize: 13,
-                  fontWeight: 600,
-                  color: "#374151",
-                  marginBottom: 8
-                }}
-              >
-                Log Access
-              </div>
-              <div
-                style={{
-                  fontSize: 13,
-                  color: "#111827",
-                  fontFamily:
-                    'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace',
-                  whiteSpace: "nowrap",
-                  overflow: "hidden",
-                  textOverflow: "ellipsis",
-                  backgroundColor: "#F9FAFB",
-                  padding: "6px 8px",
-                  borderRadius: 4,
-                  border: "1px solid #E5E7EB"
-                }}
-              >
-                bridge://recording/{state.target.targetId}
-              </div>
-            </section>
-          </section>
+      <section style={cardStyle}>
+        <div style={cardHeaderStyle}>
+          <div>
+            <div style={eyebrowStyle}>Browser Access</div>
+            <div style={cardTitleStyle}>{bridgeHint}</div>
+          </div>
 
           <button
             type="button"
-            onClick={() => onCopy(copyText)}
-            style={primaryButtonStyle}
+            role="switch"
+            aria-label="Browser Access"
+            aria-checked={state.browserAccessEnabled}
+            onClick={onToggleBrowserAccess}
+            style={switchStyle(state.browserAccessEnabled)}
           >
-            Copy For AI
+            <span style={switchThumbStyle(state.browserAccessEnabled)} />
           </button>
-        </>
+        </div>
+      </section>
+
+      {state.browserAccessEnabled ? (
+        state.target ? (
+          <>
+            <section style={cardStyle}>
+              <div style={eyebrowStyle}>Active Target</div>
+              <div style={targetTitleStyle}>{state.target.title}</div>
+              <div style={targetOriginStyle}>{state.target.origin}</div>
+              <div style={targetIdStyle}>{state.target.targetId}</div>
+            </section>
+
+            <section style={cardStyle}>
+              <div style={cardHeaderStyle}>
+                <span style={sectionTitleStyle}>Cookie Snapshot</span>
+                <button type="button" onClick={onCopyCookies} style={secondaryButtonStyle}>
+                  Copy Cookie
+                </button>
+              </div>
+              <div style={cookiePreviewStyle}>{cookiePreview || "No cookies available"}</div>
+            </section>
+
+            <button type="button" onClick={() => onCopy(copyText)} style={primaryButtonStyle}>
+              Copy For AI
+            </button>
+          </>
+        ) : (
+          <section style={{ ...cardStyle, ...emptyCardStyle }}>
+            <div style={emptyTitleStyle}>Waiting for a browser tab</div>
+            <div style={emptyBodyStyle}>
+              Open a normal web page and it will appear here automatically.
+            </div>
+          </section>
+        )
       ) : (
-        <section
-          style={{
-            ...cardStyle,
-            textAlign: "center",
-            padding: "48px 24px",
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center"
-          }}
-        >
-          <div
-            style={{
-              width: 48,
-              height: 48,
-              borderRadius: 24,
-              backgroundColor: "#F3F4F6",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              marginBottom: 16,
-              border: "1px solid #E5E7EB"
-            }}
-          >
-            <div
-              style={{
-                width: 18,
-                height: 18,
-                borderRadius: 18,
-                border: "2px solid #9CA3AF"
-              }}
-            />
-          </div>
-          <div
-            style={{
-              fontSize: 15,
-              fontWeight: 600,
-              color: "#111827",
-              marginBottom: 8
-            }}
-          >
-            Waiting for target...
-          </div>
-          <div
-            style={{
-              fontSize: 13,
-              color: "#6B7280",
-              lineHeight: 1.5
-            }}
-          >
-            Open a normal web page to register a target. Data snapshot will appear
-            here.
+        <section style={{ ...cardStyle, ...emptyCardStyle }}>
+          <div style={emptyTitleStyle}>Browser access is turned off</div>
+          <div style={emptyBodyStyle}>
+            Turn it back on to reconnect.
           </div>
         </section>
       )}
+
+      <button
+        type="button"
+        onClick={canUseBridge ? onToggleRecording : undefined}
+        disabled={!canUseBridge}
+        aria-label={debugLabel}
+        style={debugButtonStyle(state.recordingActive, canUseBridge)}
+      >
+        <span
+          className={state.recordingActive ? "bridge-debug-dot" : undefined}
+          style={debugDotStyle(state.recordingActive)}
+        />
+        <span>{debugLabel}</span>
+      </button>
     </main>
   );
 }
+
+const mainStyle: CSSProperties = {
+  width: 360,
+  padding: 16,
+  fontFamily:
+    '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif',
+  color: "#111827",
+  backgroundColor: "#F3F4F6",
+  margin: 0,
+  boxSizing: "border-box",
+  display: "flex",
+  flexDirection: "column",
+  gap: 14
+};
+
+const headerStyle: CSSProperties = {
+  display: "flex",
+  justifyContent: "space-between",
+  alignItems: "flex-start",
+  gap: 12
+};
+
+const titleStyle: CSSProperties = {
+  margin: 0,
+  fontSize: 20,
+  fontWeight: 700,
+  letterSpacing: "-0.45px",
+  color: "#111827",
+  lineHeight: 1.2
+};
+
+const bridgeUrlStyle: CSSProperties = {
+  fontSize: 12,
+  color: "#6B7280",
+  marginTop: 4
+};
+
+const cardStyle: CSSProperties = {
+  backgroundColor: "#FFFFFF",
+  border: "1px solid #E5E7EB",
+  borderRadius: 14,
+  padding: 16,
+  boxShadow: "0 1px 3px 0 rgba(0, 0, 0, 0.05)"
+};
+
+const cardHeaderStyle: CSSProperties = {
+  display: "flex",
+  justifyContent: "space-between",
+  alignItems: "center",
+  gap: 12
+};
 
 const eyebrowStyle: CSSProperties = {
   fontSize: 12,
@@ -363,12 +194,57 @@ const eyebrowStyle: CSSProperties = {
   marginBottom: 8
 };
 
-const cardStyle: CSSProperties = {
-  backgroundColor: "#FFFFFF",
+const cardTitleStyle: CSSProperties = {
+  fontSize: 15,
+  fontWeight: 600,
+  color: "#111827"
+};
+
+const sectionTitleStyle: CSSProperties = {
+  fontSize: 13,
+  fontWeight: 600,
+  color: "#374151"
+};
+
+const targetTitleStyle: CSSProperties = {
+  fontSize: 22,
+  fontWeight: 700,
+  color: "#111827",
+  lineHeight: 1.2,
+  letterSpacing: "-0.5px",
+  marginBottom: 4,
+  wordBreak: "break-word"
+};
+
+const targetOriginStyle: CSSProperties = {
+  fontSize: 13,
+  color: "#4B5563",
+  marginBottom: 16
+};
+
+const targetIdStyle: CSSProperties = {
+  fontSize: 12,
+  fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace',
+  color: "#6B7280",
+  backgroundColor: "#F9FAFB",
+  padding: "8px 10px",
+  borderRadius: 6,
   border: "1px solid #E5E7EB",
-  borderRadius: 12,
-  padding: 18,
-  boxShadow: "0 1px 3px 0 rgba(0, 0, 0, 0.05)"
+  wordBreak: "break-all"
+};
+
+const cookiePreviewStyle: CSSProperties = {
+  fontSize: 13,
+  color: "#6B7280",
+  fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace',
+  whiteSpace: "nowrap",
+  overflow: "hidden",
+  textOverflow: "ellipsis",
+  backgroundColor: "#F9FAFB",
+  padding: "6px 8px",
+  borderRadius: 4,
+  border: "1px solid #E5E7EB",
+  marginTop: 10
 };
 
 const primaryButtonStyle: CSSProperties = {
@@ -382,8 +258,7 @@ const primaryButtonStyle: CSSProperties = {
   fontWeight: 600,
   cursor: "pointer",
   boxShadow:
-    "0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)",
-  transition: "background-color 0.2s ease"
+    "0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)"
 };
 
 const secondaryButtonStyle: CSSProperties = {
@@ -395,6 +270,93 @@ const secondaryButtonStyle: CSSProperties = {
   fontSize: 12,
   fontWeight: 600,
   cursor: "pointer",
-  boxShadow: "0 1px 2px 0 rgba(0, 0, 0, 0.05)",
-  transition: "all 0.2s ease"
+  boxShadow: "0 1px 2px 0 rgba(0, 0, 0, 0.05)"
 };
+
+const emptyCardStyle: CSSProperties = {
+  textAlign: "center",
+  padding: "40px 24px"
+};
+
+const emptyTitleStyle: CSSProperties = {
+  fontSize: 15,
+  fontWeight: 600,
+  color: "#111827",
+  marginBottom: 8
+};
+
+const emptyBodyStyle: CSSProperties = {
+  fontSize: 13,
+  color: "#6B7280",
+  lineHeight: 1.5
+};
+
+function statusBadgeStyle(enabled: boolean): CSSProperties {
+  return {
+    padding: "7px 11px",
+    borderRadius: 999,
+    backgroundColor: enabled ? "#DCFCE7" : "#F3F4F6",
+    color: enabled ? "#166534" : "#6B7280",
+    border: `1px solid ${enabled ? "#BBF7D0" : "#E5E7EB"}`,
+    fontSize: 12,
+    fontWeight: 700,
+    minWidth: 44,
+    textAlign: "center"
+  };
+}
+
+function switchStyle(enabled: boolean): CSSProperties {
+  return {
+    position: "relative",
+    width: 50,
+    height: 30,
+    borderRadius: 999,
+    border: "none",
+    backgroundColor: enabled ? "#111827" : "#D1D5DB",
+    padding: 0,
+    cursor: "pointer",
+    flexShrink: 0
+  };
+}
+
+function switchThumbStyle(enabled: boolean): CSSProperties {
+  return {
+    position: "absolute",
+    top: 4,
+    left: enabled ? 24 : 4,
+    width: 22,
+    height: 22,
+    borderRadius: 999,
+    backgroundColor: "#FFFFFF",
+    boxShadow: "0 1px 3px rgba(0, 0, 0, 0.18)",
+    transition: "left 0.2s ease"
+  };
+}
+
+function debugButtonStyle(active: boolean, enabled: boolean): CSSProperties {
+  return {
+    border: "1px solid #E5E7EB",
+    borderRadius: 999,
+    padding: "10px 12px",
+    backgroundColor: active ? "#FEF2F2" : "#FFFFFF",
+    color: active ? "#B91C1C" : "#6B7280",
+    fontSize: 12,
+    fontWeight: 600,
+    cursor: enabled ? "pointer" : "default",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 8,
+    opacity: enabled ? 1 : 0.55
+  };
+}
+
+function debugDotStyle(active: boolean): CSSProperties {
+  return {
+    width: 8,
+    height: 8,
+    borderRadius: "50%",
+    backgroundColor: active ? "#EF4444" : "#9CA3AF",
+    boxShadow: active ? "0 0 8px rgba(239, 68, 68, 0.75)" : "none"
+  };
+}

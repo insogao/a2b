@@ -1,0 +1,13 @@
+{
+  "sharedInstructions": "Be explicit about whether A2B felt smooth. If there are disconnects, stale targets, timeout errors, or manual recovery, record them even if the task later succeeds.",
+  "tasks": [
+    {
+      "name": "Weather Search",
+      "prompt": "Use A2B to open or select a browser tab and find the current weather for Shanghai. Prefer A2B high-level commands. Only fall back to run-js if needed."
+    },
+    {
+      "name": "Finance News Crawl",
+      "prompt": "Use A2B to gather several current finance headlines from a news or finance site. Prefer A2B high-level commands. Only fall back to run-js if needed."
+    }
+  ]
+}

@@ -1,0 +1,1 @@
+Run `node ./bin/a2b.mjs status --json`. If `extensionConnected` is true, use the returned `guideUrl` and existing targets, and do not start another relay. If `status` fails, start exactly one relay with `node ./bin/a2b.mjs serve --port 46321`, rerun `status`, then continue with the guide from `guideUrl` or `docs/AI_OPERATOR_GUIDE.md`.
