@@ -56,6 +56,13 @@ Documentation is a bootstrap aid, not a required network dependency.
    - `a2b screenshot <target> --path <file>`
 5. `a2b run-js <target> <file>` only when needed
 
+## Reliable Interaction Patterns
+
+- Prefer `a2b select <target>` before `a2b goto <target> <url>`. This is the most reliable navigation pattern.
+- Do not assume the immediate `goto` response proves the page finished navigating. Confirm with `a2b tabs --json`, `a2b wait-for`, or `a2b eval-js`.
+- If `a2b press <target> <selector> Enter` does not submit a search or form, retry with an explicit submit-button `click`.
+- Prefer high-level commands over `run-js` even when a first attempt needs a small retry or a different selector.
+
 ## Recovery
 
 If you hit:

@@ -162,6 +162,15 @@
         </section>
 
         <section class="card">
+          <h2>Reliable Patterns</h2>
+          <ul>
+            <li>Prefer <code>a2b select &lt;target&gt;</code> before <code>a2b goto &lt;target&gt; &lt;url&gt;</code>.</li>
+            <li>Do not trust the immediate <code>goto</code> response as proof that navigation finished. Recheck with <code>tabs</code>, <code>wait-for</code>, or <code>eval-js</code>.</li>
+            <li>If <code>press Enter</code> does not submit a search or form, retry with an explicit submit-button <code>click</code>.</li>
+          </ul>
+        </section>
+
+        <section class="card">
           <h2>Do Not Do These First</h2>
           <ul>
             <li>Do not start a second relay if one is already healthy.</li>

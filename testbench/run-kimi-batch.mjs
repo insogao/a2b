@@ -10,6 +10,7 @@ import {
   renderRunSummary,
   renderTaskPrompt
 } from "./lib/task-runner.mjs";
+import { createDefaultBatchEnvironmentPreflight } from "./lib/environment.mjs";
 
 function parseArgs(argv) {
   const args = [...argv];
@@ -170,6 +171,18 @@ async function main() {
     runDir,
     sharedInstructions: manifest.sharedInstructions ?? ""
   });
+
+  const preflight = createDefaultBatchEnvironmentPreflight({
+    cwd: process.cwd(),
+    profileDirectory: "Default",
+    relayPort: 46321
+  });
+  const environment = await preflight();
+  await fs.writeFile(
+    path.join(runDir, "environment.json"),
+    JSON.stringify(environment, null, 2),
+    "utf8"
+  );
 
   const results = await runWithConcurrency(
     tasks,

@@ -42,6 +42,15 @@ node ./testbench/run-kimi-batch.mjs --manifest ./testbench/tasks/default.json --
 
 The runner feeds each agent a prompt that starts with a simulated `Copy For AI` bootstrap, then appends the specific test task. That keeps batch tests closer to the real user handoff path.
 
+Before launching any Kimi task, the runner now does a shared environment preflight:
+
+- reuses an existing Chrome if one is already running
+- starts at most one shared Chrome instance when Chrome is closed
+- reuses an existing relay when healthy
+- starts at most one shared relay when needed
+
+This keeps environment churn out of the logs, so remaining confusion is more likely to come from A2B docs or command semantics.
+
 ## Reporting Rules
 
 Every AI task report must explicitly cover:

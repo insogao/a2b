@@ -61,9 +61,11 @@ describe("testbench task runner helpers", () => {
     expect(prompt).toContain("Always record unexpected failures.");
     expect(prompt).toContain("Collect finance headlines.");
     expect(prompt).toContain(task.reportPath);
+    expect(prompt).toContain("The runner already prepared one shared relay and one shared Chrome instance when possible.");
     expect(prompt).toContain("1. Whether the flow felt smooth");
     expect(prompt).toContain("2. Any interruptions, disconnects, ambiguity, or manual recovery");
-    expect(prompt).toContain("Do not start a second relay if `a2b status --json` already works");
+    expect(prompt).toContain("Do not start another relay if `a2b status --json` already works.");
+    expect(prompt).toContain("Do not launch Google Chrome yourself. Reuse the shared browser instance.");
     expect(prompt).toContain("Do not read `bin/a2b.mjs` unless the CLI help is insufficient");
     expect(prompt).toContain("Update the report file early");
     expect(prompt).toContain("Within your first 3 commands, replace at least one `Pending` bullet");

@@ -121,6 +121,9 @@ If the probe fails, the popup stays available, but browser automation commands w
 ## Recommended Use
 
 - Prefer A2B high-level commands for common tasks such as selecting a tab, navigating, waiting, clicking, typing, and taking screenshots.
+- In practice, `select <target>` followed by `goto <target> <url>` is more reliable than jumping straight to `goto`.
+- Treat the immediate `goto` response as a request acknowledgement, not proof that the new page has fully loaded yet.
+- If `press Enter` does not submit a search form on a site, retry with an explicit submit-button `click`.
 - Use `a2b run-js` when the built-in action set is not enough for a site-specific task.
 - Use `agent-browser snapshot` when you need a structured view of the page, interactive refs, or a richer automation planning surface.
 - Use `agent-browser` more broadly only when you need a stronger browser automation engine than the A2B bridge surface provides.
