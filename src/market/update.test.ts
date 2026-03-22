@@ -54,6 +54,15 @@ describe("market update", () => {
               sourceType: "external_github",
               sourceUrl: "https://github.com/example/google-guide",
               tags: ["search", "external"]
+            },
+            {
+              id: "multimedia/yt-dlp",
+              title: "yt-dlp",
+              summary: "External download tool",
+              sourceType: "external_tool",
+              sourceUrl: "https://github.com/yt-dlp/yt-dlp",
+              docPath: "multimedia/yt-dlp.md",
+              tags: ["video", "download"]
             }
           ]
         })
@@ -61,6 +70,10 @@ describe("market update", () => {
       [
         "search/baidu.md",
         "# Baidu\n\nUse Baidu for Chinese-language search tasks.\n"
+      ],
+      [
+        "multimedia/yt-dlp.md",
+        "# yt-dlp\n\nInstall yt-dlp separately before using it.\n"
       ]
     ]);
 
@@ -80,7 +93,8 @@ describe("market update", () => {
     expect(fetched).toEqual([
       "index.json",
       "search/index.json",
-      "search/baidu.md"
+      "search/baidu.md",
+      "multimedia/yt-dlp.md"
     ]);
     expect(
       await fs.readFile(path.join(cacheRoot, "index.json"), "utf8")
@@ -91,5 +105,8 @@ describe("market update", () => {
     expect(
       await fs.readFile(path.join(cacheRoot, "search", "baidu.md"), "utf8")
     ).toContain("# Baidu");
+    expect(
+      await fs.readFile(path.join(cacheRoot, "multimedia", "yt-dlp.md"), "utf8")
+    ).toContain("# yt-dlp");
   });
 });

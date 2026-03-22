@@ -48,6 +48,7 @@ Current market entries can be:
   - external GitHub documentation or skill repos
 - `external_tool`
   - external tools such as `yt-dlp`
+  - may still include cached markdown notes in `market show` when the market repo provides a local guide
 
 ## Execution Rule
 

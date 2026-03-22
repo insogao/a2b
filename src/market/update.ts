@@ -26,11 +26,12 @@ export async function updateMarketCache(options: UpdateMarketCacheOptions) {
 
     const categoryIndex = parseCategoryIndex(JSON.parse(categoryRaw));
     for (const entry of categoryIndex.entries) {
-      if (entry.sourceType !== "local_doc") {
+      const docPath = entry.sourceType === "local_doc" ? entry.sourceUrl : entry.docPath;
+      if (!docPath) {
         continue;
       }
 
-      const docRaw = await options.fetchText(entry.sourceUrl);
+      const docRaw = await options.fetchText(docPath);
       await writeText(getEntryDocPath(cacheRoot, entry.id), docRaw);
     }
   }

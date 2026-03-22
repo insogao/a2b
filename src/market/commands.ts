@@ -22,10 +22,7 @@ export async function listMarketEntries(cacheRoot: string, category: string) {
 
 export async function showMarketEntry(cacheRoot: string, entryId: string) {
   const entry = await findMarketEntry(cacheRoot, entryId);
-  const content =
-    entry.sourceType === "local_doc"
-      ? await fs.readFile(getEntryDocPath(cacheRoot, entry.id), "utf8")
-      : null;
+  const content = await readCachedEntryDoc(cacheRoot, entry.id);
 
   return {
     entry,
@@ -70,4 +67,15 @@ async function findMarketEntry(cacheRoot: string, entryId: string) {
     throw new Error(`Market entry not found: ${entryId}`);
   }
   return entry;
+}
+
+async function readCachedEntryDoc(cacheRoot: string, entryId: string) {
+  try {
+    return await fs.readFile(getEntryDocPath(cacheRoot, entryId), "utf8");
+  } catch (error) {
+    if (error instanceof Error && "code" in error && error.code === "ENOENT") {
+      return null;
+    }
+    throw error;
+  }
 }

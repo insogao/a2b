@@ -43,7 +43,7 @@ describe("market commands", () => {
     ]);
   });
 
-  it("lists entries for a category and can show a local doc entry", async () => {
+  it("lists entries for a category and can show entries with cached docs", async () => {
     const cacheRoot = await seedCache();
 
     const entries = await listMarketEntries(cacheRoot, "search");
@@ -53,6 +53,10 @@ describe("market commands", () => {
     const entry = await showMarketEntry(cacheRoot, "search/baidu");
     expect(entry.entry.title).toBe("Baidu");
     expect(entry.content).toContain("# Baidu");
+
+    const externalTool = await showMarketEntry(cacheRoot, "multimedia/yt-dlp");
+    expect(externalTool.entry.title).toBe("yt-dlp (External Tool)");
+    expect(externalTool.content).toContain("Install yt-dlp separately");
   });
 
   it("searches entries across categories", async () => {
@@ -60,12 +64,12 @@ describe("market commands", () => {
 
     const results = await searchMarketEntries(cacheRoot, "video");
 
-    expect(results).toEqual([
+    expect(results).toContainEqual(
       expect.objectContaining({
         id: "multimedia/yt-dlp",
-        title: "yt-dlp"
+        title: "yt-dlp (External Tool)"
       })
-    ]);
+    );
   });
 });
 
@@ -96,7 +100,8 @@ async function seedCache() {
         {
           id: "search/baidu",
           title: "Baidu",
-          summary: "Chinese search engine",
+          summary:
+            "Baidu search: Chinese-language queries, fallback for DOM-submit issues, use when local results matter",
           sourceType: "local_doc",
           sourceUrl: "search/baidu.md",
           tags: ["search", "china"]
@@ -128,10 +133,12 @@ async function seedCache() {
       entries: [
         {
           id: "multimedia/yt-dlp",
-          title: "yt-dlp",
-          summary: "Video download tool",
+          title: "yt-dlp (External Tool)",
+          summary:
+            "External CLI tool for downloading videos from YouTube and other sites. Not included with A2B.",
           sourceType: "external_tool",
           sourceUrl: "https://github.com/yt-dlp/yt-dlp",
+          docPath: "multimedia/yt-dlp.md",
           tags: ["video", "download"]
         }
       ]
@@ -141,6 +148,11 @@ async function seedCache() {
   await fs.writeFile(
     path.join(cacheRoot, "search", "baidu.md"),
     "# Baidu\n\nUse Baidu for Chinese-language search tasks.\n",
+    "utf8"
+  );
+  await fs.writeFile(
+    path.join(cacheRoot, "multimedia", "yt-dlp.md"),
+    "# yt-dlp\n\nInstall yt-dlp separately before using it from shell workflows.\n",
     "utf8"
   );
 

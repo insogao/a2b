@@ -55,6 +55,7 @@ describe("market schema helpers", () => {
           summary: "External download tool",
           sourceType: "external_tool" satisfies MarketEntrySourceType,
           sourceUrl: "https://github.com/yt-dlp/yt-dlp",
+          docPath: "multimedia/yt-dlp.md",
           tags: ["video", "download"]
         }
       ]
@@ -67,5 +68,6 @@ describe("market schema helpers", () => {
     });
     expect(category.entries).toHaveLength(3);
     expect(category.entries[2]?.sourceType).toBe("external_tool");
+    expect(category.entries[2]?.docPath).toBe("multimedia/yt-dlp.md");
   });
 });

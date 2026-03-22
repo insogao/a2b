@@ -25,10 +25,12 @@ export async function updateMarketCache({
 
     const categoryIndex = JSON.parse(categoryRaw);
     for (const entry of categoryIndex.entries ?? []) {
-      if (entry.sourceType !== "local_doc" || typeof entry.sourceUrl !== "string") {
+      const docPath =
+        entry.sourceType === "local_doc" ? entry.sourceUrl : entry.docPath;
+      if (typeof docPath !== "string" || docPath.length === 0) {
         continue;
       }
-      const docRaw = await fetchText(`${baseUrl}/${entry.sourceUrl}`);
+      const docRaw = await fetchText(`${baseUrl}/${docPath}`);
       await writeText(path.join(cacheRoot, ...entry.id.split("/")) + ".md", docRaw);
     }
   }
@@ -65,9 +67,7 @@ export async function showMarketEntry(
   }
 
   const content =
-    entry.sourceType === "local_doc"
-      ? await fs.readFile(path.join(cacheRoot, ...entry.id.split("/")) + ".md", "utf8")
-      : null;
+    await readCachedEntryDoc(cacheRoot, entry.id);
 
   return { entry, content };
 }
@@ -111,4 +111,15 @@ async function fetchText(url) {
 async function writeText(filePath, contents) {
   await fs.mkdir(path.dirname(filePath), { recursive: true });
   await fs.writeFile(filePath, contents, "utf8");
+}
+
+async function readCachedEntryDoc(cacheRoot, entryId) {
+  try {
+    return await fs.readFile(path.join(cacheRoot, ...entryId.split("/")) + ".md", "utf8");
+  } catch (error) {
+    if (error && typeof error === "object" && "code" in error && error.code === "ENOENT") {
+      return null;
+    }
+    throw error;
+  }
 }

@@ -15,6 +15,7 @@ export type MarketEntry = {
   summary: string;
   sourceType: MarketEntrySourceType;
   sourceUrl: string;
+  docPath?: string;
   tags: string[];
 };
 
@@ -67,6 +68,7 @@ function parseEntry(value: unknown): MarketEntry {
     summary: asString(record.summary),
     sourceType,
     sourceUrl: asString(record.sourceUrl),
+    docPath: typeof record.docPath === "string" ? record.docPath : undefined,
     tags: asArray(record.tags).map(asString)
   };
 }
