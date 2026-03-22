@@ -10,7 +10,7 @@ import {
 } from "./lib/a2b-market.mjs";
 import { createRelayServer } from "./lib/a2b-relay-server.mjs";
 import { requestJson } from "./lib/a2b-http-client.mjs";
-import { formatHelp } from "./lib/a2b-help.mjs";
+import { formatHelp, formatMarketHelp } from "./lib/a2b-help.mjs";
 
 function parseArgs(argv) {
   const args = [...argv];
@@ -94,6 +94,11 @@ try {
   if (command === "market") {
     const subcommand = rest[0];
     const subarg = rest[1];
+
+    if (!subcommand || subcommand === "-h" || subcommand === "--help" || subcommand === "help") {
+      print(formatMarketHelp(), false);
+      process.exit(0);
+    }
 
     if (subcommand === "update") {
       print(await updateMarketCache(), flags.json);

@@ -29,3 +29,21 @@ Usage:
   a2b wait-for <target> <selector> [--timeout-ms <n>] [--port <port>] [--token <token>] [--json]
 `;
 }
+
+export function formatMarketHelp() {
+  return `A2B CLI market
+
+Usage:
+  a2b market -h
+  a2b market update [--json]
+  a2b market categories [--json]
+  a2b market list <category> [--json]
+  a2b market show <entry> [--json]
+  a2b market search <keyword> [--json]
+
+Notes:
+  Use \`categories\` to browse top-level groups.
+  Use \`list\` for category ids such as \`search\`.
+  Use \`show\` for entry ids such as \`search/baidu\`.
+`;
+}

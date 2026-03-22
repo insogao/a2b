@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { formatHelp } from "../../bin/lib/a2b-help.mjs";
+import { formatHelp, formatMarketHelp } from "../../bin/lib/a2b-help.mjs";
 
 describe("a2b CLI help", () => {
   it("lists the page operation subcommands", () => {
@@ -22,5 +22,18 @@ describe("a2b CLI help", () => {
     expect(help).toContain("a2b forward <target>");
     expect(help).toContain("a2b close <target>");
     expect(help).toContain("a2b run-js <target> <file>");
+  });
+
+  it("prints dedicated market subcommand help", () => {
+    const help = formatMarketHelp();
+
+    expect(help).toContain("a2b market -h");
+    expect(help).toContain("a2b market update");
+    expect(help).toContain("a2b market categories");
+    expect(help).toContain("a2b market list <category>");
+    expect(help).toContain("a2b market show <entry>");
+    expect(help).toContain("a2b market search <keyword>");
+    expect(help).toContain("Use `list` for category ids");
+    expect(help).toContain("Use `show` for entry ids");
   });
 });
